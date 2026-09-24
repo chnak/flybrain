@@ -35,8 +35,10 @@ download = ["requests>=2.32"]
 dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.6"]
 
 [project.urls]
-Homepage = "https://github.com/marketcalls/openfly"
-Source = "https://github.com/marketcalls/openfly"
+Homepage = "https://github.com/chnak/flybrain"
+Source = "https://github.com/chnak/flybrain"
+Issues = "https://github.com/chnak/flybrain/issues"
+Changelog = "https://github.com/chnak/flybrain/blob/main/docs/USAGE.zh.md"
 
 [build-system]
 requires = ["hatchling"]
