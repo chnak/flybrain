@@ -1,0 +1,35 @@
+# ─── Python ──────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+*.egg
+
+# ─── Virtual envs ────────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+
+# ─── IDE / OS ────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Tooling caches ──────────────────────────────────────────────────────
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# ─── Foliko runtime ──────────────────────────────────────────────────────
+.foliko/
+
+# ─── Flybrain local data (~/.flybrain/) ──────────────────────────────────
+# Compiled graphs and downloaded datasets are user-specific and big.
+# Users get these via `flybrain.connectome.compile.compile_graph()`.
+*.npz.lock
+*.npz.tmp
