@@ -21,8 +21,8 @@ import math
 import numpy as np
 from PIL import Image, ImageDraw
 
-from flybrain.eyemap import EyeMap, as_eye_map, resolve_eye_map
-from flybrain.interfaces import SensorFrame, Stimulus
+from flybrainer.eyemap import EyeMap, as_eye_map, resolve_eye_map
+from flybrainer.interfaces import SensorFrame, Stimulus
 
 ENCODER_NAMES = {
     "A": "chart",

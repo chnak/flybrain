@@ -1,11 +1,11 @@
-"""flybrain: a Numba-JIT accelerated fruit-fly connectome.
+"""flybrainer: a Numba-JIT accelerated fruit-fly connectome.
 
 Extracted from OpenFly (github.com/marketcalls/openfly). Independent of
 broker / market / front-end code.
 """
-from flybrain import readout
-from flybrain.brain import Brain, build_populations, load_graph, r8_ame12_edges
-from flybrain.encoders import (
+from flybrainer import readout
+from flybrainer.brain import Brain, build_populations, load_graph, r8_ame12_edges
+from flybrainer.encoders import (
     ENCODER_NAMES,
     FEATURE_NAMES,
     BarsEncoder,
@@ -13,8 +13,8 @@ from flybrain.encoders import (
     FeatureEncoder,
     make_encoder,
 )
-from flybrain.eyemap import EyeMap, as_eye_map, default_eye_map, resolve_eye_map
-from flybrain.interfaces import (
+from flybrainer.eyemap import EyeMap, as_eye_map, default_eye_map, resolve_eye_map
+from flybrainer.interfaces import (
     REQUIRED_POPULATIONS,
     BrainProtocol,
     Decision,
@@ -25,13 +25,13 @@ from flybrain.interfaces import (
     SensorFrame,
     Stimulus,
 )
-from flybrain.kernel import (
+from flybrainer.kernel import (
     KERNEL_PARAMETERS,
     KERNEL_VERSION,
     Kernel,
     KernelState,
 )
-from flybrain.plasticity import MV_PER_CONTACT, KCMBONPlasticity, PlasticityConfig
+from flybrainer.plasticity import MV_PER_CONTACT, KCMBONPlasticity, PlasticityConfig
 
 __version__ = "0.1.0"
 

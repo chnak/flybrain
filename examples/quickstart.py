@@ -1,4 +1,4 @@
-"""End-to-end flybrain example using a stub Brain (no MaleCNS download).
+"""End-to-end flybrainer example using a stub Brain (no MaleCNS download).
 
 This file is runnable as:
 
@@ -20,7 +20,7 @@ from typing import Any
 
 import numpy as np
 
-from flybrain import (
+from flybrainer import (
     REQUIRED_POPULATIONS,
     BrainProtocol,
     Decision,
@@ -29,12 +29,12 @@ from flybrain import (
     SensorFrame,
     Stimulus,
 )
-from flybrain.encoders import make_encoder
-from flybrain.readout.fixed import FixedDecoder
+from flybrainer.encoders import make_encoder
+from flybrainer.readout.fixed import FixedDecoder
 
 # ---------------------------------------------------------------------------
 # Stub implementation of BrainProtocol.  Replace with:
-#     from flybrain import Brain, load_graph
+#     from flybrainer import Brain, load_graph
 #     brain = Brain(graph_path="connectome/...")
 # once you have a real compiled graph.
 # ---------------------------------------------------------------------------
@@ -120,7 +120,7 @@ def make_sensor_frame() -> SensorFrame:
 
 
 # Need Bar from interfaces to build the sensor frame
-from flybrain.interfaces import Bar  # noqa: E402
+from flybrainer.interfaces import Bar  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Pipeline

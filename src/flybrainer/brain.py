@@ -44,13 +44,13 @@ from typing import Any
 
 import numpy as np
 
-from flybrain import kernel as K
-from flybrain.connectome.compile import GRAPH_FORMAT_VERSION
-from flybrain.connectome.verify import sha256_array
-from flybrain.interfaces import REQUIRED_POPULATIONS, ObservationResult, Stimulus
-from flybrain.kernel import KERNEL_PARAMETERS, KERNEL_VERSION, Kernel, KernelState
-from flybrain.paths import PATHS
-from flybrain.plasticity import KCMBONPlasticity, PlasticityConfig
+from flybrainer import kernel as K
+from flybrainer.connectome.compile import GRAPH_FORMAT_VERSION
+from flybrainer.connectome.verify import sha256_array
+from flybrainer.interfaces import REQUIRED_POPULATIONS, ObservationResult, Stimulus
+from flybrainer.kernel import KERNEL_PARAMETERS, KERNEL_VERSION, Kernel, KernelState
+from flybrainer.paths import PATHS
+from flybrainer.plasticity import KCMBONPlasticity, PlasticityConfig
 
 BIN_STEPS = 100
 BIN_MS = BIN_STEPS * K.DT_MS

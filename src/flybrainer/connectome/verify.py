@@ -17,8 +17,8 @@ from typing import Any
 
 import numpy as np
 
-from flybrain.connectome.sources import SOURCES
-from flybrain.paths import PATHS
+from flybrainer.connectome.sources import SOURCES
+from flybrainer.paths import PATHS
 
 LOCK_NAME = "graph.lock.json"
 MANIFEST_NAME = "graph-manifest.json"

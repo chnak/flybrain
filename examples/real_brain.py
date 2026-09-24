@@ -1,4 +1,4 @@
-"""End-to-end flybrain example using the REAL Brain (not a stub).
+"""End-to-end flybrainer example using the REAL Brain (not a stub).
 
 Run:
     python examples/real_brain.py
@@ -49,7 +49,7 @@ from pathlib import Path
 
 import numpy as np
 
-from flybrain import (
+from flybrainer import (
     REQUIRED_POPULATIONS,
     Brain,
     Decision,
@@ -57,16 +57,16 @@ from flybrain import (
     Prediction,
     SensorFrame,
 )
-from flybrain.encoders import make_encoder
-from flybrain.interfaces import Bar
-from flybrain.readout.fixed import FixedDecoder
+from flybrainer.encoders import make_encoder
+from flybrainer.interfaces import Bar
+from flybrainer.readout.fixed import FixedDecoder
 
 # ---------------------------------------------------------------------------
 # 1. Build a synthetic connectome in-memory
 # ---------------------------------------------------------------------------
 # ``Brain`` accepts a ``graph=`` dict that mimics the contents of a compiled
 # ``graph.npz``.  The required keys are listed in
-# ``flybrain.brain.GRAPH_ARRAYS``.  We carve 100 neurons into plausible cell
+# ``flybrainer.brain.GRAPH_ARRAYS``.  We carve 100 neurons into plausible cell
 # types so every REQUIRED_POPULATIONS entry is non-empty and the signal can
 # flow from R1-R6 -> lamina -> KC -> MBON -> DNp20.
 # ---------------------------------------------------------------------------

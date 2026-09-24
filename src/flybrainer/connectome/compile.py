@@ -44,10 +44,10 @@ from typing import Any
 
 import numpy as np
 
-from flybrain.connectome import normalize as nz
-from flybrain.connectome.sources import DATASET, LICENSE, SOURCES, source
-from flybrain.connectome.verify import manifest_path, write_lock
-from flybrain.paths import PATHS
+from flybrainer.connectome import normalize as nz
+from flybrainer.connectome.sources import DATASET, LICENSE, SOURCES, source
+from flybrainer.connectome.verify import manifest_path, write_lock
+from flybrainer.paths import PATHS
 
 GRAPH_FORMAT_VERSION = 1
 

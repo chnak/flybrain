@@ -1,4 +1,4 @@
-"""Default paths for flybrain artifacts.
+"""Default paths for flybrainer artifacts.
 
 Replaces ``openfly.config.PATHS``.  Every location that needs a file on disk
 (historical connectome downloads, compiled graph, etc.) goes through the
@@ -16,7 +16,7 @@ from pathlib import Path
 
 @dataclass(frozen=True)
 class Paths:
-    """Filesystem locations for flybrain artifacts."""
+    """Filesystem locations for flybrainer artifacts."""
 
     root: Path
 

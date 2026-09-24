@@ -15,7 +15,7 @@ from pathlib import Path
 
 import numpy as np
 
-from flybrain.interfaces import Decision, Prediction, SensorFrame
+from flybrainer.interfaces import Decision, Prediction, SensorFrame
 
 
 class ColumnBinding:

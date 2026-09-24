@@ -19,8 +19,8 @@ from pathlib import Path
 
 import numpy as np
 
-from flybrain.interfaces import Decision, Prediction, SensorFrame
-from flybrain.readout.fixed import ColumnBinding
+from flybrainer.interfaces import Decision, Prediction, SensorFrame
+from flybrainer.readout.fixed import ColumnBinding
 
 DEFAULT_POPULATIONS = ("DN", "MBON", "random2000")
 

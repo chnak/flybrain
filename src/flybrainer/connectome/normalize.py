@@ -34,7 +34,7 @@ import pyarrow as pa
 import pyarrow.feather as feather
 import pyarrow.ipc as ipc
 
-from flybrain.connectome.sources import source
+from flybrainer.connectome.sources import source
 
 EXPECTED = {"neurons": 166_700, "edges": 25_582_938, "contacts": 124_177_617}
 

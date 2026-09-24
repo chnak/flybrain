@@ -1,4 +1,4 @@
-"""End-to-end flybrain example using the REAL MaleCNS v1.0 connectome.
+"""End-to-end flybrainer example using the REAL MaleCNS v1.0 connectome.
 
 This is the same pipeline as examples/real_brain.py but loads the FULL
 166,700-neuron MaleCNS v1.0 connectome compiled from the 1 GB feather files,
@@ -10,7 +10,7 @@ Run:
 Requirements:
     - MaleCNS v1.0 feather files in  ~/.flybrain/malecns/
     - Compiled graph.npz at      ~/.flybrain/graph.npz
-    (Both are produced by flybrain.connectome.compile.compile_graph().)
+    (Both are produced by flybrainer.connectome.compile.compile_graph().)
 
 What this demo does
 -------------------
@@ -30,16 +30,16 @@ from datetime import datetime, timedelta, timezone
 
 import numpy as np
 
-from flybrain import (
+from flybrainer import (
     REQUIRED_POPULATIONS,
     Brain,
     SensorFrame,
 )
-from flybrain.interfaces import Bar
-from flybrain.connectome.compile import compile_graph
-from flybrain.encoders import make_encoder
-from flybrain.paths import PATHS
-from flybrain.readout.fixed import FixedDecoder
+from flybrainer.interfaces import Bar
+from flybrainer.connectome.compile import compile_graph
+from flybrainer.encoders import make_encoder
+from flybrainer.paths import PATHS
+from flybrainer.readout.fixed import FixedDecoder
 
 print("=" * 70)
 print("REAL MaleCNS v1.0 Brain demo")

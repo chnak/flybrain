@@ -13,8 +13,8 @@ import urllib.request
 from collections.abc import Callable
 from pathlib import Path
 
-from flybrain.connectome.sources import SOURCES, Source
-from flybrain.connectome.verify import sha256_file
+from flybrainer.connectome.sources import SOURCES, Source
+from flybrainer.connectome.verify import sha256_file
 
 ProgressCallback = Callable[[int, int], None]
 

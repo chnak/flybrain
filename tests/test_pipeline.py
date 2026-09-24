@@ -11,7 +11,7 @@ from typing import Any
 import numpy as np
 import pytest
 
-from flybrain import (
+from flybrainer import (
     REQUIRED_POPULATIONS,
     BrainProtocol,
     Decision,
@@ -20,9 +20,9 @@ from flybrain import (
     SensorFrame,
     Stimulus,
 )
-from flybrain.encoders import make_encoder
-from flybrain.interfaces import Bar
-from flybrain.readout.fixed import FixedDecoder
+from flybrainer.encoders import make_encoder
+from flybrainer.interfaces import Bar
+from flybrainer.readout.fixed import FixedDecoder
 
 
 class FakeBrain:

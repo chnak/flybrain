@@ -1,0 +1,23 @@
+# Normalize text file line endings to LF (Unix) for cross-platform consistency.
+# Binary files (calibration data, npz, feather, compiled artifacts) are
+# marked explicitly so git does not attempt to translate them.
+
+*                 text=auto eol=lf
+*.png             binary
+*.jpg             binary
+*.jpeg            binary
+*.gif             binary
+*.pdf             binary
+*.zip             binary
+*.tar.gz          binary
+*.whl             binary
+*.npz             binary
+*.feather         binary
+*.npy             binary
+*.pkl             binary
+*.joblib          binary
+*.pyc             binary
+*.so              binary
+*.pyd             binary
+*.dll             binary
+*.exe             binary

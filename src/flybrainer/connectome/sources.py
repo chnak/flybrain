@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from flybrain.paths import PATHS
+from flybrainer.paths import PATHS
 
 URL_PREFIX = "https://storage.googleapis.com/flyem-male-cns/v1.0/connectome-data/flat-connectome/"
 LICENSE = "CC-BY 4.0"

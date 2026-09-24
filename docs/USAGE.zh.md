@@ -1,7 +1,7 @@
-# flybrain 使用手册（中文版）
+# flybrainer 使用手册（中文版）
 
 > 版本：0.1.0 · 最后更新：2026-09-24
-> 适用对象：使用 flybrain 做研究、二次封装、嵌入式集成、复现 OpenFly 全部或部分管线的开发者。
+> 适用对象：使用 flybrainer 做研究、二次封装、嵌入式集成、复现 OpenFly 全部或部分管线的开发者。
 
 ---
 
@@ -23,7 +23,7 @@
 
 ## 第 1 章：项目简介与设计目标
 
-**flybrain** 是从 [OpenFly](https://github.com/marketcalls/openfly) 抽取出来的**独立可重用** Python 包。OpenFly 是一个用果蝇大脑连接组（MaleCNS v1.0）模拟量化交易决策的项目。flybrain 把其中**纯神经科学部分**完全隔离，可以脱离 broker / 市场数据 / 前端独立使用。
+**flybrainer** 是从 [OpenFly](https://github.com/marketcalls/openfly) 抽取出来的**独立可重用** Python 包。OpenFly 是一个用果蝇大脑连接组（MaleCNS v1.0）模拟量化交易决策的项目。flybrainer 把其中**纯神经科学部分**完全隔离，可以脱离 broker / 市场数据 / 前端独立使用。
 
 **核心能力**
 
@@ -48,7 +48,7 @@
 
 ```bash
 # 仅核心（默认）：numpy + numba + pillow
-pip install flybrain
+pip install flybrainer
 # 或本地可编辑安装（开发推荐）：
 pip install -e D:/date/20260918/flybrain
 ```
@@ -78,9 +78,9 @@ pip install -e "D:/date/20260918/flybrain[dev,feather,readout]"
 ### 2.3 验证安装
 
 ```python
-import flybrain
-print(flybrain.__version__)       # 0.1.0
-print(len(flybrain.__all__))      # 31 个公开符号
+import flybrainer
+print(flybrainer.__version__)       # 0.1.0
+print(len(flybrainer.__all__))      # 31 个公开符号
 ```
 
 ---
@@ -89,7 +89,7 @@ print(len(flybrain.__all__))      # 31 个公开符号
 
 ### 3.1 数据管道
 
-flybrain 把"信号 → 决策"分解为 **4 步**，每一步都有明确的接口契约：
+flybrainer 把"信号 → 决策"分解为 **4 步**，每一步都有明确的接口契约：
 
 ```
 你的输入       编码            神经            解码            你的输出
@@ -99,7 +99,7 @@ SensorFrame ─[Encoder]→ Stimulus ─[Brain]→ counts ─[Decoder]→ Predic
               features       (Numba @njit)
 ```
 
-### 3.2 4 个核心契约（`flybrain.interfaces`）
+### 3.2 4 个核心契约（`flybrainer.interfaces`）
 
 | 名称 | 类型 | 作用 |
 |---|---|---|
@@ -117,7 +117,7 @@ SensorFrame ─[Encoder]→ Stimulus ─[Brain]→ counts ─[Decoder]→ Predic
 ### 3.3 必须存在的 16 个脑区（`REQUIRED_POPULATIONS`）
 
 ```python
-from flybrain import REQUIRED_POPULATIONS
+from flybrainer import REQUIRED_POPULATIONS
 # ('R1-R6', 'R8p', 'R8y', 'lamina', 'KC', 'PAM11', 'PPL101',
 #  'MBON07', 'MBON11', 'MBON', 'DNp20_L', 'DNp20_R', 'DNpe017',
 #  'DN', 'central_complex', 'random2000')
@@ -144,7 +144,7 @@ class Decision(str, Enum):
 
 ```python
 """
-End-to-end flybrain example using a stub Brain.
+End-to-end flybrainer example using a stub Brain.
 Run: python examples/quickstart.py
 """
 from dataclasses import dataclass
@@ -152,12 +152,12 @@ from datetime import datetime, timezone, timedelta
 
 import numpy as np
 
-from flybrain import (
+from flybrainer import (
     REQUIRED_POPULATIONS, BrainProtocol, Decision,
     ObservationResult, Prediction, SensorFrame, Stimulus,
 )
-from flybrain.encoders import make_encoder
-from flybrain.readout.fixed import FixedDecoder
+from flybrainer.encoders import make_encoder
+from flybrainer.readout.fixed import FixedDecoder
 
 
 # ① StubBrain：256 个神经元的最小桩，无真脑图也能跑通
@@ -230,7 +230,7 @@ print(f"Prediction: decision={pred.decision.value}  "
 
 > 全部 31 个公开符号。除特别说明，所有 dataclass 都是 `frozen=True`。
 
-### 5.1 契约层（`flybrain.interfaces`）
+### 5.1 契约层（`flybrainer.interfaces`）
 
 #### 5.1.1 `Stimulus`
 ```python
@@ -300,7 +300,7 @@ class Decision(str, Enum):
 
 ---
 
-### 5.2 视网膜坐标（`flybrain.eyemap`）
+### 5.2 视网膜坐标（`flybrainer.eyemap`）
 
 #### 5.2.1 `EyeMap`
 ```python
@@ -325,7 +325,7 @@ class EyeMap:
 
 ---
 
-### 5.3 编码器（`flybrain.encoders`）
+### 5.3 编码器（`flybrainer.encoders`）
 
 3 个内置 encoder + 1 个工厂：
 
@@ -371,7 +371,7 @@ FeatureEncoder(eye_map=None, *,
 
 ---
 
-### 5.4 LIF 核（`flybrain.kernel`）
+### 5.4 LIF 核（`flybrainer.kernel`）
 
 #### 5.4.1 常量
 | 常量 | 值 | 含义 |
@@ -387,7 +387,7 @@ FeatureEncoder(eye_map=None, *,
 #### 5.4.2 `Kernel` 类
 Numba `@njit(cache=True)` 编译的 LIF 核。一般用户**不需要直接构造**（`Brain.__init__` 会自动建），但你写自定义 Brain 时需要：
 ```python
-from flybrain.kernel import Kernel
+from flybrainer.kernel import Kernel
 Kernel(ptr, post, weight, modulatory, is_kc)
 ```
 - `ptr`：`np.int64`, shape `(n+1,)`，CSR 指针
@@ -401,7 +401,7 @@ Kernel(ptr, post, weight, modulatory, is_kc)
 
 ---
 
-### 5.5 可塑性（`flybrain.plasticity`）
+### 5.5 可塑性（`flybrainer.plasticity`）
 
 #### 5.5.1 `MV_PER_CONTACT`
 `0.275` mV（一个突触接触的标准反应幅度）。
@@ -426,7 +426,7 @@ KC → MBON 突触的 Oja-style 可塑性。**仅当 `Brain(plastic=True)` 时�
 
 ---
 
-### 5.6 Brain（`flybrain.brain`）
+### 5.6 Brain（`flybrainer.brain`）
 
 #### 5.6.1 `Brain` 类
 ```python
@@ -462,7 +462,7 @@ Brain(graph_path=None,                # 默认 PATHS.graph
 
 ---
 
-### 5.7 读出器（`flybrain.readout.*`）
+### 5.7 读出器（`flybrainer.readout.*`）
 
 #### 5.7.1 `FixedDecoder`
 ```python
@@ -504,11 +504,11 @@ ReservoirReadout(populations=DEFAULT_POPULATIONS,
 
 ---
 
-### 5.8 连接组工具链（`flybrain.connectome.*`）
+### 5.8 连接组工具链（`flybrainer.connectome.*`）
 
 #### 5.8.1 元数据（`sources`）
 ```python
-from flybrain.connectome import SOURCES, Source, URL_PREFIX, LICENSE, DATASET
+from flybrainer.connectome import SOURCES, Source, URL_PREFIX, LICENSE, DATASET
 # SOURCES: 3 个 Source（annotations / neurotransmitters / weights）
 # Source 属性：role, name, bytes, sha256
 # Source 方法：.url, .path(root=None) → Path
@@ -516,7 +516,7 @@ from flybrain.connectome import SOURCES, Source, URL_PREFIX, LICENSE, DATASET
 
 #### 5.8.2 下载（`download`，无强制依赖）
 ```python
-from flybrain.connectome import download_source, is_verified, DownloadError
+from flybrainer.connectome import download_source, is_verified, DownloadError
 
 path = download_source(src: Source,
                       root: Path | None = None,           # 默认 PATHS.malecns
@@ -527,7 +527,7 @@ path = download_source(src: Source,
 
 #### 5.8.3 编译（`compile`，需 `[feather]`）
 ```python
-from flybrain.connectome import (
+from flybrainer.connectome import (
     compile_graph, read_manifest, normalize_uv, photoreceptor_geometry,
     GRAPH_FORMAT_VERSION,
 )
@@ -541,7 +541,7 @@ manifest = read_manifest(graph_path) → dict | None
 
 #### 5.8.4 标准化（`normalize`，需 `[feather]`）
 ```python
-from flybrain.connectome import (
+from flybrainer.connectome import (
     sign_from_nt, tokenize_nt, load_annotations, node_arrays,
 )
 ```
@@ -549,7 +549,7 @@ NT 符号规则（标准化神经元递质 → ±1 符号）见 `normalize.py` �
 
 #### 5.8.5 校验（`verify`）
 ```python
-from flybrain.connectome.verify import (
+from flybrainer.connectome.verify import (
     sha256_file, sha256_array,
     lock_path, manifest_path,
     array_hashes, graph_hashes,
@@ -560,13 +560,13 @@ from flybrain.connectome.verify import (
 
 ---
 
-### 5.9 路径管理（`flybrain.paths`）
+### 5.9 路径管理（`flybrainer.paths`）
 
 ```python
-from flybrain.paths import PATHS, Paths
+from flybrainer.paths import PATHS, Paths
 
 # PATHS 实例（frozen）
-PATHS.root      # 默认 ~/.flybrain
+PATHS.root      # 默认 ~/.flybrainer
 PATHS.malecns   # 默认 ~/.flybrain/malecns   feather 源文件目录
 PATHS.graph     # 默认 ~/.flybrain/graph.npz 编译产物
 PATHS.ensure()  # 自动 mkdir -p
@@ -575,8 +575,8 @@ PATHS.ensure()  # 自动 mkdir -p
 **覆盖方式**：设置环境变量 `FLYBRAIN_DATA`（在 import 之前）：
 ```python
 import os
-os.environ["FLYBRAIN_DATA"] = "/scratch/flybrain"
-from flybrain.paths import PATHS
+os.environ["FLYBRAIN_DATA"] = "/scratch/flybrain-data"
+from flybrainer.paths import PATHS
 ```
 
 ---
@@ -592,7 +592,7 @@ from flybrain.paths import PATHS
 ### 场景 2：切换 3 种编码器
 
 ```python
-from flybrain.encoders import make_encoder
+from flybrainer.encoders import make_encoder
 
 for name in ["bars", "chart", "feature"]:
     enc = make_encoder(name)
@@ -619,7 +619,7 @@ with open("stimulus.png", "wb") as f:
 ### 场景 3：自定义 FixedDecoder 决策规则
 
 ```python
-from flybrain.readout.fixed import FixedDecoder
+from flybrainer.readout.fixed import FixedDecoder
 
 decoder = FixedDecoder(
     neural_ms=300.0,            # 模拟更久（更稳）
@@ -639,15 +639,15 @@ print(pred.decision, pred.confidence, pred.details)
 
 ### 场景 4：完整接入 MaleCNS v1.0 真脑图
 
-**前置**：`pip install flybrain[feather,download]`
+**前置**：`pip install flybrainer[feather,download]`
 
 ```python
-import flybrain
-from flybrain.paths import PATHS
-from flybrain.connectome import (
+import flybrainer
+from flybrainer.paths import PATHS
+from flybrainer.connectome import (
     SOURCES, download_source, is_verified, compile_graph,
 )
-from flybrain import Brain
+from flybrainer import Brain
 
 # ① 准备目录
 PATHS.ensure()
@@ -678,11 +678,11 @@ print(f"spike 数：{result.counts.sum()} in {result.neural_ms} ms")
 
 ### 场景 5：用 ReservoirReadout 训练 + 推理
 
-**前置**：`pip install flybrain[readout]`
+**前置**：`pip install flybrainer[readout]`
 
 ```python
 import numpy as np
-from flybrain.readout.reservoir import ReservoirReadout
+from flybrainer.readout.reservoir import ReservoirReadout
 
 # ① 准备历史数据（伪）
 n_obs, n_neurons = 1000, 256
@@ -712,7 +712,7 @@ print(batch_pred.keys())   # dict_keys(['roi', 'signal', 'decision', 'confidence
 ### 场景 6：自定义 EyeMap（覆盖脑自带）
 
 ```python
-from flybrain.eyemap import EyeMap, as_eye_map, resolve_eye_map
+from flybrainer.eyemap import EyeMap, as_eye_map, resolve_eye_map
 
 # ① 自定义 5 字段
 custom = EyeMap(
@@ -763,9 +763,9 @@ print(brain.provenance())
 ### 7.1 默认路径
 
 ```python
-from flybrain.paths import PATHS
-print(PATHS.root)        # Windows: C:\Users\<user>\.flybrain
-                         # Linux/macOS: ~/.flybrain
+from flybrainer.paths import PATHS
+print(PATHS.root)        # Windows: C:\Users\<user>\.flybrainer
+                         # Linux/macOS: ~/.flybrainer
 print(PATHS.malecns)     # ~/.flybrain/malecns
 print(PATHS.graph)       # ~/.flybrain/graph.npz
 ```
@@ -774,11 +774,11 @@ print(PATHS.graph)       # ~/.flybrain/graph.npz
 
 | 方式 | 何时生效 | 示例 |
 |---|---|---|
-| `os.environ["FLYBRAIN_DATA"]` | import flybrain 之前 | `os.environ["FLYBRAIN_DATA"] = "/data/fb"` |
+| `os.environ["FLYBRAIN_DATA"]` | import flybrainer 之前 | `os.environ["FLYBRAIN_DATA"] = "/data/fb"` |
 | 直接修改 `PATHS` 实例 | 不行（frozen） | — |
 | 临时目录 | `tempfile.mkdtemp()` + 改 `FLYBRAIN_DATA` | 见测试 `test_paths.py` |
 
-**注意**：环境变量必须在 `from flybrain.paths import PATHS` **之前**设置；PATHS 是 module-import 时冻结的。
+**注意**：环境变量必须在 `from flybrainer.paths import PATHS` **之前**设置；PATHS 是 module-import 时冻结的。
 
 ### 7.3 磁盘占用估算
 
@@ -867,7 +867,7 @@ cd D:/date/20260918/flybrain
 
 ```python
 # tests/test_my_feature.py
-from flybrain import ...
+from flybrainer import ...
 
 def test_my_new_encoder():
     enc = MyEncoder()
@@ -884,7 +884,7 @@ def test_my_new_encoder():
 my_new_extra = ["package1>=1.0", "package2"]
 
 # 然后：
-[tool.flybrain.extras]
+[tool.flybrainer.extras]
 my_new_extra = "描述何时使用"
 ```
 
@@ -892,8 +892,8 @@ my_new_extra = "描述何时使用"
 
 ## 第 10 章：常见问题（FAQ）
 
-### Q1：装好 `flybrain` 但 `import flybrain.connectome` 抛 ImportError？
-A：connectome 子模块大多用了 `__getattr__` 懒加载。`feather` extra 缺失时 `compile_graph` / `normalize_uv` 等会报 ImportError。解决：`pip install flybrain[feather,download]`。
+### Q1：装好 `flybrainer` 但 `import flybrainer.connectome` 抛 ImportError？
+A：connectome 子模块大多用了 `__getattr__` 懒加载。`feather` extra 缺失时 `compile_graph` / `normalize_uv` 等会报 ImportError。解决：`pip install flybrainer[feather,download]`。
 
 ### Q2：`Brain.load_graph()` 报 `FileNotFoundError`？
 A：`PATHS.graph` 默认不存在。你必须先 `compile_graph(PATHS.malecns)` 生成它；或者直接传 `graph_path="your/path/to/graph.npz"`。
@@ -911,10 +911,10 @@ A：可以。`ReservoirReadout.__init__` 接受 `brain=None`，之后 `predict(c
 A：Windows 下一般要先装 [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/)。Linux/Mac 一般无此问题。
 
 ### Q7：`paths.PATHS` 是单例吗？
-A：是。`from flybrain.paths import PATHS` 永远拿到同一个 frozen 实例。`FLYBRAIN_DATA` 只在 import 前有效。
+A：是。`from flybrainer.paths import PATHS` 永远拿到同一个 frozen 实例。`FLYBRAIN_DATA` 只在 import 前有效。
 
 ### Q8：能不能打包成 wheel 发布？
-A：可以。`pyproject.toml` 已经是 hatchling。`hatch build` → `dist/flybrain-0.1.0-py3-none-any.whl`。
+A：可以。`pyproject.toml` 已经是 hatchling。`hatch build` → `dist/flybrainer-0.1.0-py3-none-any.whl`。
 
 ### Q9：`Prediction.details` 是什么结构？
 A：每种 decoder 自定义，但必有 `readout` 字段（decoder name）和 `signal` 字段（ENTER/EXIT/HOLD）。`FixedDecoder` 还填 `difference_hz` / `gate_spikes` / `threshold_hz`；`ReservoirReadout` 填 `ridge_value` / `clf_prob`。
@@ -966,21 +966,21 @@ Stimulus
 
 | 文件 | 作用 | 行数（约） |
 |---|---|---|
-| `src/flybrain/__init__.py` | 31 个公开符号聚合 | 90 |
-| `src/flybrain/paths.py` | PATHS 实例 + `FLYBRAIN_DATA` 覆盖 | 60 |
-| `src/flybrain/interfaces.py` | 4 dataclass + 3 Protocol + Decision | 280 |
-| `src/flybrain/encoders.py` | 3 encoder + make_encoder + 工具 | 540 |
-| `src/flybrain/eyemap.py` | EyeMap + 3 helper | 170 |
-| `src/flybrain/kernel.py` | Numba `@njit` LIF 核 + 常量 | 460 |
-| `src/flybrain/plasticity.py` | Oja-style KC→MBON + PlasticityConfig | 200 |
-| `src/flybrain/brain.py` | `Brain` 类 + `load_graph` + `build_populations` | 510 |
-| `src/flybrain/readout/fixed.py` | `FixedDecoder` + `ColumnBinding` | 200 |
-| `src/flybrain/readout/reservoir.py` | `ReservoirReadout` + ridge + logistic | 290 |
-| `src/flybrain/connectome/sources.py` | 3 个 Source + sha256 + URL | 100 |
-| `src/flybrain/connectome/download.py` | 断点续传 + sha256 校验 | 150 |
-| `src/flybrain/connectome/normalize.py` | NT → 符号规则 | 200 |
-| `src/flybrain/connectome/compile.py` | feather → .npz | 470 |
-| `src/flybrain/connectome/verify.py` | 哈希 + 锁文件 + 验证 | 130 |
+| `src/flybrainer/__init__.py` | 31 个公开符号聚合 | 90 |
+| `src/flybrainer/paths.py` | PATHS 实例 + `FLYBRAIN_DATA` 覆盖 | 60 |
+| `src/flybrainer/interfaces.py` | 4 dataclass + 3 Protocol + Decision | 280 |
+| `src/flybrainer/encoders.py` | 3 encoder + make_encoder + 工具 | 540 |
+| `src/flybrainer/eyemap.py` | EyeMap + 3 helper | 170 |
+| `src/flybrainer/kernel.py` | Numba `@njit` LIF 核 + 常量 | 460 |
+| `src/flybrainer/plasticity.py` | Oja-style KC→MBON + PlasticityConfig | 200 |
+| `src/flybrainer/brain.py` | `Brain` 类 + `load_graph` + `build_populations` | 510 |
+| `src/flybrainer/readout/fixed.py` | `FixedDecoder` + `ColumnBinding` | 200 |
+| `src/flybrainer/readout/reservoir.py` | `ReservoirReadout` + ridge + logistic | 290 |
+| `src/flybrainer/connectome/sources.py` | 3 个 Source + sha256 + URL | 100 |
+| `src/flybrainer/connectome/download.py` | 断点续传 + sha256 校验 | 150 |
+| `src/flybrainer/connectome/normalize.py` | NT → 符号规则 | 200 |
+| `src/flybrainer/connectome/compile.py` | feather → .npz | 470 |
+| `src/flybrainer/connectome/verify.py` | 哈希 + 锁文件 + 验证 | 130 |
 | `tests/test_imports.py` | 19 个 import / 构造测试 | 200 |
 | `tests/test_pipeline.py` | 3 个端到端测试 | 110 |
 | `examples/quickstart.py` | 30 秒可运行 demo | 130 |
@@ -989,4 +989,4 @@ Stimulus
 
 **祝你用得开心。** 🪰
 
-如发现文档错误或 API 缺失，请编辑本仓库 `flybrain/docs/USAGE.zh.md`，或在 issue 中给出复现命令。
+如发现文档错误或 API 缺失，请编辑本仓库 `flybrainer/docs/USAGE.zh.md`，或在 issue 中给出复现命令。

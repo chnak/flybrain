@@ -9,8 +9,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-import flybrain
-from flybrain import (
+import flybrainer
+from flybrainer import (
     ENCODER_NAMES,
     KERNEL_PARAMETERS,
     KERNEL_VERSION,
@@ -34,8 +34,8 @@ from flybrain import (
 # ---- top-level ----
 
 def test_version_present():
-    assert isinstance(flybrain.__version__, str)
-    assert flybrain.__version__ == "0.1.0"
+    assert isinstance(flybrainer.__version__, str)
+    assert flybrainer.__version__ == "0.1.0"
 
 
 def test_all_has_expected_core_symbols():
@@ -46,7 +46,7 @@ def test_all_has_expected_core_symbols():
         "ChartEncoder", "BarsEncoder", "FeatureEncoder",
         "EyeMap", "default_eye_map", "resolve_eye_map",
     ):
-        assert name in flybrain.__all__, name
+        assert name in flybrainer.__all__, name
 
 
 # ---- interfaces ----

@@ -1,4 +1,4 @@
-# flybrain
+# flybrainer
 
 A reusable, Numba-JIT accelerated **fruit-fly connectome** simulator —
 extracted from [OpenFly](https://github.com/marketcalls/openfly).
@@ -19,17 +19,17 @@ trading, robotics, audio classification, RL environments, etc.
 
 ```bash
 # Minimum (no MaleCNS, no sklearn):
-pip install flybrain
+pip install flybrainer
 
 # With everything:
-pip install flybrain[feather,readout,download]
+pip install flybrainer[feather,readout,download]
 ```
 
 ## 30-second example
 
 ```python
 import numpy as np
-from flybrain import Brain, Stimulus
+from flybrainer import Brain, Stimulus
 
 # Build a tiny synthetic graph (no MaleCNS required)
 n = 100
@@ -59,7 +59,7 @@ See `examples/` for more.
 ## Architecture
 
 ```
-src/flybrain/
+src/flybrainer/
 ├── interfaces.py    # zero-dep contracts (Stimulus, BrainProtocol, SensorFrame)
 ├── eyemap.py        # EyeMap dataclass + resolver
 ├── encoders.py      # ChartEncoder, BarsEncoder, FeatureEncoder + make_encoder()
@@ -81,8 +81,8 @@ src/flybrain/
 
 | extra | adds | when needed |
 |---|---|---|
-| `feather` | `pandas`, `pyarrow` | `from flybrain.connectome import normalize, compile_graph` |
-| `readout` | `scikit-learn`, `scipy`, `joblib` | `from flybrain.readout import ReservoirReadout` |
+| `feather` | `pandas`, `pyarrow` | `from flybrainer.connectome import normalize, compile_graph` |
+| `readout` | `scikit-learn`, `scipy`, `joblib` | `from flybrainer.readout import ReservoirReadout` |
 | `download` | `requests` | `download_source(...)` |
 | `dev` | `pytest`, `pytest-cov`, `ruff` | testing |
 
@@ -92,7 +92,7 @@ already on disk (you just can't re-derive from raw `.feather` files).
 ## Tests
 
 ```bash
-pip install flybrain[feather,readout,dev]
+pip install flybrainer[feather,readout,dev]
 pytest tests/ -v
 ```
 
