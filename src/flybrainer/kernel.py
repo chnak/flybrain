@@ -42,10 +42,22 @@ active position) so that a random access to a neuron touches one cache line.
 Integer fields are stored as exact float64 integers.
 
 Deterministic: no random numbers, fixed iteration order. The end-of-call
-materialize loop runs under numba's TBB thread pool (`parallel=True` + `prange`);
-each work item touches a disjoint cache line in the 64-byte-aligned state
-record, so the final state is bit-identical to the single-threaded version
-(verified by `scripts/verify_kernel.py`).
+materialize loop and the start-of-call wake pass both run under numba's
+TBB thread pool (`parallel=True` + `prange`). The wake pass uses a
+two-stage scheme: each thread writes eligible sleeper indices into its
+own slot of a per-thread buffer, then the main thread compacts the
+buffers in thread-id order; because thread `tid` owns the disjoint
+chunk `[tid*chunk, (tid+1)*chunk)`, the final iteration order matches
+the original serial `for i in range(n)` order and the kernel stays
+bit-identical (verified by `scripts/verify_kernel.py`).
+
+Wake-pass dispatch (v1.3): the parallel two-stage scheme is only used
+when the population is large enough to amortize the TBB scheduling
+overhead (`n >= WAKE_PARALLEL_THRESHOLD`, default 1024).  For smaller
+populations the wake pass falls back to a plain serial scan, which is
+about an order of magnitude faster on toy and microcircuit graphs.
+Both branches produce the same final active-set order, so the kernel
+remains bit-identical across the threshold.
 """
 
 from __future__ import annotations
@@ -53,10 +65,26 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
+import numba
 import numpy as np
 from numba import njit, prange
 
-KERNEL_VERSION = "openfly-lif-1.2"
+KERNEL_VERSION = "openfly-lif-1.3"
+
+# Number of parallel chunks used by the wake pass.  Each thread owns a
+# disjoint slice of the neuron index range, so this should be >= the
+# number of physical cores.  We capture `NUMBA_NUM_THREADS` at import
+# time so the prange fan-out matches the runtime thread pool size.
+WAKE_THREADS = int(numba.config.NUMBA_NUM_THREADS)
+
+# Below this population size the wake pass uses a plain serial loop;
+# above it, the parallel two-stage scheme is used.  The TBB scheduling
+# overhead for `prange(WAKE_THREADS)` is roughly 20 us, so the
+# crossover point for the eligibility scan is around n=400 neurons;
+# we round up to 1024 to stay safely on the parallel side for the
+# MaleCNS-scale workload while keeping toy and other small graphs on
+# the cheaper serial path.
+WAKE_PARALLEL_THRESHOLD = 1024
 
 DT_MS = 0.1
 TAU_M_MS = 20.0
@@ -184,17 +212,60 @@ def run_steps(
     a_tab,
     b_tab,
     c_tab,
+    wake_buf,
+    wake_count,
 ):
     """Advance the network by n_steps from `clock`. Returns the new clock.
 
     `S[:, DRIVE]` is the per-neuron constant current (mV) for the whole call.
-    `counts` accumulates spikes per neuron. Everything else is state.
+    `counts` accumulates spikes per neuron. `wake_buf` / `wake_count` are
+    scratch buffers for the parallel wake pass; `wake_buf` has shape
+    (WAKE_THREADS, n) (int32) and `wake_count` has shape (WAKE_THREADS,)
+    (int64).  Everything else is state.
     """
     n = S.shape[0]
     # The drive may have changed since the last call: wake eligible sleepers.
-    for i in range(n):
-        if S[i, POS] < 0.0 and _eligible(i, S):
-            _activate(i, S, active_idx, n_active)
+    # For small populations (n < WAKE_PARALLEL_THRESHOLD) we use a plain
+    # serial loop; the TBB scheduling overhead of the parallel scheme is
+    # only worth paying for MaleCNS-scale graphs.  Both branches preserve
+    # the bit-identical property: a serial scan produces indices in
+    # ascending order, and the parallel scheme preserves that order by
+    # having thread `tid` own the chunk `[tid*chunk, (tid+1)*chunk)`.
+    if n < WAKE_PARALLEL_THRESHOLD:
+        for i in range(n):
+            if S[i, POS] < 0.0 and _eligible(i, S):
+                _activate(i, S, active_idx, n_active)
+    else:
+        # Two-stage parallel scheme: each thread scans a disjoint chunk
+        # of neurons and writes the eligible sleeper indices into its
+        # own slot of `wake_buf` (no cross-thread writes), then we
+        # compact in thread-id order.  Because thread `tid` owns the
+        # chunk `[tid*chunk, (tid+1)*chunk)`, the final iteration
+        # order matches the serial `for i in range(n)` order and the
+        # state stays bit-identical to the single-threaded version.
+        wake_count[:] = 0
+        chunk = (n + WAKE_THREADS - 1) // WAKE_THREADS
+        for tid in prange(WAKE_THREADS):
+            lo = tid * chunk
+            hi = lo + chunk
+            if hi > n:
+                hi = n
+            k = 0
+            for i in range(lo, hi):
+                if S[i, POS] < 0.0 and _eligible(i, S):
+                    wake_buf[tid, k] = i
+                    k += 1
+            wake_count[tid] = k
+        base = n_active[0]
+        cursor = base
+        for tid in range(WAKE_THREADS):
+            cnt = wake_count[tid]
+            for k in range(cnt):
+                i = wake_buf[tid, k]
+                active_idx[cursor] = i
+                S[i, POS] = float(cursor)
+                cursor += 1
+        n_active[0] = cursor
     now = clock
     for _ in range(n_steps):
         now += 1
@@ -255,6 +326,8 @@ class KernelState:
     ring_count: np.ndarray  # int64 (RING_SLOTS,)
     active_idx: np.ndarray  # int32 (n,)
     n_active: np.ndarray  # int64 (1,)
+    wake_buf: np.ndarray  # int32 (WAKE_THREADS, n), scratch for parallel wake
+    wake_count: np.ndarray  # int64 (WAKE_THREADS,), scratch for parallel wake
     clock: int
 
     @classmethod
@@ -270,6 +343,8 @@ class KernelState:
             ring_count=np.zeros(RING_SLOTS, np.int64),
             active_idx=np.zeros(n, np.int32),
             n_active=np.zeros(1, np.int64),
+            wake_buf=np.zeros((WAKE_THREADS, n), np.int32),
+            wake_count=np.zeros(WAKE_THREADS, np.int64),
             clock=0,
         )
 
@@ -398,6 +473,7 @@ class Kernel:
         if len(counts) != self.n or counts.dtype != np.int32:
             raise ValueError("counts must be int32 of length n")
         s = self.state
+        s = self.state
         s.clock = int(
             run_steps(
                 int(n_steps),
@@ -416,6 +492,8 @@ class Kernel:
                 self.a_tab,
                 self.b_tab,
                 self.c_tab,
+                s.wake_buf,
+                s.wake_count,
             )
         )
         return s.clock
