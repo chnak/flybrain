@@ -35,7 +35,7 @@ from flybrainer import (
 
 def test_version_present():
     assert isinstance(flybrainer.__version__, str)
-    assert flybrainer.__version__ == "0.1.0"
+    assert flybrainer.__version__ == "0.2.0"
 
 
 def test_all_has_expected_core_symbols():

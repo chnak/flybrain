@@ -1,4 +1,4 @@
-"""Event-driven leaky integrate-and-fire kernel (numba, single-threaded, exact).
+"""Event-driven leaky integrate-and-fire kernel (numba, parallel materialize, exact).
 
 Model (per neuron i, all voltages in mV, time in ms):
 
@@ -41,7 +41,11 @@ Memory layout: the per-neuron state lives in one float64 (n, 8) array `S`
 active position) so that a random access to a neuron touches one cache line.
 Integer fields are stored as exact float64 integers.
 
-Deterministic: no random numbers, no threads, fixed iteration order.
+Deterministic: no random numbers, fixed iteration order. The end-of-call
+materialize loop runs under numba's TBB thread pool (`parallel=True` + `prange`);
+each work item touches a disjoint cache line in the 64-byte-aligned state
+record, so the final state is bit-identical to the single-threaded version
+(verified by `scripts/verify_kernel.py`).
 """
 
 from __future__ import annotations
@@ -50,9 +54,9 @@ import math
 from dataclasses import dataclass
 
 import numpy as np
-from numba import njit
+from numba import njit, prange
 
-KERNEL_VERSION = "openfly-lif-1.1"
+KERNEL_VERSION = "openfly-lif-1.2"
 
 DT_MS = 0.1
 TAU_M_MS = 20.0
@@ -162,7 +166,7 @@ def _deactivate_at(k, S, active_idx, n_active):
     n_active[0] = last_k
 
 
-@njit(cache=True)
+@njit(cache=True, parallel=True)
 def run_steps(
     n_steps,
     clock,
@@ -235,7 +239,9 @@ def run_steps(
             else:
                 _deactivate_at(k, S, active_idx, n_active)
     # Materialize every neuron so the caller may change the drive.
-    for i in range(n):
+    # Safe to prange: each i touches a disjoint cache line (state record is
+    # 64-byte aligned) and there are no cross-neuron writes.
+    for i in prange(n):
         _evolve(i, now, S, a_tab, b_tab, c_tab)
     return now
 

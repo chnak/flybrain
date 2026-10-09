@@ -5,6 +5,8 @@ broker / market / front-end code.
 """
 from flybrainer import readout
 from flybrainer.brain import Brain, build_populations, load_graph, r8_ame12_edges
+from flybrainer.decision import CandidateResponse, OptionDecider, make_iv_scenarios, make_strike_scenarios
+from flybrainer.ensemble import BatchBrain
 from flybrainer.encoders import (
     ENCODER_NAMES,
     FEATURE_NAMES,
@@ -33,7 +35,7 @@ from flybrainer.kernel import (
 )
 from flybrainer.plasticity import MV_PER_CONTACT, KCMBONPlasticity, PlasticityConfig
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     # contracts
@@ -74,4 +76,10 @@ __all__ = [
     "r8_ame12_edges",
     # subpackage
     "readout",
+    # ensemble + decision
+    "BatchBrain",
+    "OptionDecider",
+    "CandidateResponse",
+    "make_iv_scenarios",
+    "make_strike_scenarios",
 ]

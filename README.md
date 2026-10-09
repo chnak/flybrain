@@ -14,7 +14,7 @@ dependencies.
 | **Package** | `flybrainer`  (`pip install flybrainer`) |
 | **Python**  | `>= 3.12, < 3.14` |
 | **Core deps** | `numpy >= 2.2`, `numba >= 0.61`, `pillow >= 10` |
-| **Kernel**  | `openfly-lif-1.1` — event-driven LIF, 18M+ spikes/sec, single-threaded exact |
+| **Kernel**  | `openfly-lif-1.2` — event-driven LIF, parallel materialize, bit-identical, **3.4x** faster than 1.1 on MaleCNS |
 | **Connectome** | MaleCNS v1.0 (166,700 neurons, ~3.5 M synapses) |
 | **License** | MIT (the MaleCNS dataset itself is CC-BY 4.0) |
 
@@ -228,8 +228,8 @@ src/flybrainer/
 
 ### Kernel
 
-`openfly-lif-1.1` is an event-driven, single-threaded, exact leaky
-integrate-and-fire:
+`openfly-lif-1.2` is an event-driven, exact leaky integrate-and-fire
+whose end-of-call materialize loop runs in parallel via numba's TBB pool:
 
 - **dt = 0.1 ms** (10 µs), closed-form integration between events
 - Membrane: `τ_m dv/dt = -(v - rest) + I + g - A`  (τ_m = 20 ms)
@@ -238,6 +238,16 @@ integrate-and-fire:
 - Axonal delay 1.8 ms (19-slot ring buffer), refractory 2.2 ms
 - Kenyon cells rest at −60 mV (others −52 mV), threshold −45 mV
 - 10 ms observation bins, sleep/wake list — no approximations on silent neurons
+- **End-of-call materialize is `prange`-parallel** (`@njit(parallel=True)`);
+  each work item touches a disjoint 64-byte cache line in the state record,
+  so the final state is bit-identical to the single-threaded version.
+  Spike delivery and the active list remain sequential because they have
+  cross-neuron races. See `docs/kernel-parallel-optimization.md`.
+
+**Determinism:** no random numbers, fixed iteration order. The parallel
+materialize produces spike counts that are bit-identical to the single-
+threaded implementation — verified by `scripts/verify_kernel.py` and
+`tests/test_kernel_parallel.py`.
 
 ### The R8 → aMe12 assumption
 
@@ -298,10 +308,22 @@ extra is only needed for the round-trip tests.
 - First `Brain(...)` call costs ~7 s on a cold Numba JIT cache; subsequent
   loads are sub-second (Numba caches by source hash in
   `__pycache__/_numba_cache_*.nbc`).
-- Throughput scales linearly with active neurons; on a 2024 laptop the
-  full MaleCNS v1.0 graph (~166 k neurons, ~3.5 M synapses) runs at
-  ~50 ms wall-clock per 500 ms simulated when driven by photoreceptor
-  activity that wakes ~10–15 % of cells per bin.
+- Single-call wall time on a 20-core box (2024 laptop-class hardware):
+
+  | Graph                      | openfly-lif-1.1 | **1.2 (parallel)** | Speedup |
+  |----------------------------|-----------------|---------------------|---------|
+  | 100-neuron toy (200 ms)    | 5.34 ms         | **1.46 ms**         | **3.66x** |
+  | MaleCNS v1.0 (200 ms)      | 1611 ms         | **471 ms**          | **3.42x** |
+
+- For ensemble / option-evaluation use cases, run N independent
+  `Brain.observe()` calls in parallel via `flybrainer.ensemble.BatchBrain`
+  (`multiprocessing.ProcessPoolExecutor`, keep-alive brains). On 8
+  workers MaleCNS evaluates 8 candidates in **1.3 s wall** (≈165 ms
+  per candidate), a **9.5x** win over the naive single-threaded path.
+  See `docs/ensemble-benchmarks.md`.
+- Throughput scales linearly with active neurons; the per-call cost
+  is dominated by the materialize loop (now parallel), with spike
+  delivery and active-list maintenance as the residual sequential work.
 - `Bin ms = 1.0` (10 × 0.1 ms steps) is the smallest unit; pulses shorter
   than the bin are silently dropped from `ObservationResult.sim_ms` but
   still affect the spike counts of the bin they fall into.
@@ -323,6 +345,13 @@ extra is only needed for the round-trip tests.
   [`docs/USAGE.zh.md`](docs/USAGE.zh.md)
 - Source-of-truth API: [`src/flybrainer/interfaces.py`](src/flybrainer/interfaces.py)
 - Run-anytime demos: [`examples/`](examples/)
+- Performance / architecture deep-dives:
+  - [`docs/kernel-parallel-optimization.md`](docs/kernel-parallel-optimization.md) — openfly-lif-1.2 single-core prange (3.4x)
+  - [`docs/ensemble-benchmarks.md`](docs/ensemble-benchmarks.md) — BatchBrain / 8-proc ensemble (9.5x end-to-end)
+- Verify scripts (run-anytime):
+  - `python scripts/bench_decision.py` — single-call + ensemble timing table
+  - `python scripts/verify_kernel.py` — asserts two brains on the parallel kernel produce bit-identical spike counts
+  - `python scripts/demo_decider.py` — 8-scenario decision wall-time demo
 
 ---
 

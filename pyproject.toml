@@ -1,6 +1,6 @@
 [project]
 name = "flybrainer"
-version = "0.1.1"
+version = "0.2.0"
 description = "A reusable, Numba-JIT accelerated fruit-fly connectome (MaleCNS v1.0) extracted from OpenFly"
 readme = "README.md"
 license = { file = "LICENSE" }
