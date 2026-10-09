@@ -63,6 +63,7 @@ remains bit-identical across the threshold.
 from __future__ import annotations
 
 import math
+import os
 from dataclasses import dataclass
 
 import numba
@@ -72,10 +73,43 @@ from numba import njit, prange
 KERNEL_VERSION = "openfly-lif-1.3"
 
 # Number of parallel chunks used by the wake pass.  Each thread owns a
-# disjoint slice of the neuron index range, so this should be >= the
-# number of physical cores.  We capture `NUMBA_NUM_THREADS` at import
-# time so the prange fan-out matches the runtime thread pool size.
-WAKE_THREADS = int(numba.config.NUMBA_NUM_THREADS)
+# disjoint slice of the neuron index range.  We respect `NUMBA_NUM_THREADS`
+# if the user has set it, but otherwise cap the *library default* at
+# `FLYBRAINER_NUM_THREADS_DEFAULT` (conservative on big boxes) so a fresh
+# import on, say, a 64-core machine does not pin every core for a tiny
+# toy graph.  This is captured at import time so the prange fan-out
+# matches the runtime thread pool size; changing it after import has no
+# effect because numba locks the JIT thread pool on first compilation.
+FLYBRAINER_NUM_THREADS_DEFAULT = 4
+
+
+def _resolve_num_threads() -> int:
+    """Return the worker count to use, in priority order:
+
+    1. FLYBRAINER_NUM_THREADS env var (explicit per-process knob)
+    2. NUMBA_NUM_THREADS env var (numba-native knob, respected if user
+       has already set it)
+    3. FLYBRAINER_NUM_THREADS_DEFAULT (our conservative default, NOT
+       os.cpu_count())
+    The result is then capped at os.cpu_count() to avoid oversubscription.
+    """
+    fb = os.environ.get("FLYBRAINER_NUM_THREADS")
+    if fb is not None and fb.strip():
+        n = int(fb)
+    elif os.environ.get("NUMBA_NUM_THREADS") is not None:
+        n = int(os.environ["NUMBA_NUM_THREADS"])
+    else:
+        n = FLYBRAINER_NUM_THREADS_DEFAULT
+    cpu = os.cpu_count() or n
+    return max(1, min(n, cpu))
+
+
+# Apply before any JIT compilation happens.  Setting
+# `numba.config.NUMBA_NUM_THREADS` throttles every `prange(...)` site in
+# every JITted function in the library, not just our wake pass.
+_resolved_threads = _resolve_num_threads()
+numba.config.NUMBA_NUM_THREADS = _resolved_threads
+WAKE_THREADS = _resolved_threads
 
 # Below this population size the wake pass uses a plain serial loop;
 # above it, the parallel two-stage scheme is used.  The TBB scheduling

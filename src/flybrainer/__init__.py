@@ -35,7 +35,7 @@ from flybrainer.kernel import (
 )
 from flybrainer.plasticity import MV_PER_CONTACT, KCMBONPlasticity, PlasticityConfig
 
-__version__ = "0.2.0"
+__version__ = "0.3.1"
 
 __all__ = [
     # contracts
