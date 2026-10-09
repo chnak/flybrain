@@ -33,3 +33,12 @@ htmlcov/
 # Users get these via `flybrain.connectome.compile.compile_graph()`.
 *.npz.lock
 *.npz.tmp
+
+# ─── Bench / dev-time probes (openfly-lif-1.3 work) ─────────────────────
+# bench_v12/*.npy  : captured state snapshots from bench_v12_capture.py
+# scripts/diag*.py : ad-hoc diagnostic probes (one-shot during dev)
+# scripts/instr_kernel.py / probe_overhead.py : micro-profilers
+bench_v12/*.npy
+scripts/diag*.py
+scripts/instr_kernel.py
+scripts/probe_overhead.py
